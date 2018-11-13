@@ -6,12 +6,12 @@ import browser       from 'browser-sync';
 import gulp          from 'gulp';
 import panini        from 'panini';
 import rimraf        from 'rimraf';
-import sherpa        from 'style-sherpa';
 import yaml          from 'js-yaml';
 import fs            from 'fs';
 import webpackStream from 'webpack-stream';
 import webpack4      from 'webpack';
 import named         from 'vinyl-named';
+import sherpa        from 'style-sherpa';
 
 // Load all Gulp plugins into one variable
 const $ = plugins();
@@ -29,7 +29,7 @@ function loadConfig() {
 
 // Build the "dist" folder by running all of the below tasks
 gulp.task('build',
- gulp.series(clean, gulp.parallel(pages, sass, javascript, copy)));
+ gulp.series(clean, gulp.parallel(pages, javascript, copy), sass, styleGuide));
 
 // Build the site, run the server, and watch for file changes
 gulp.task('default',
@@ -46,6 +46,14 @@ function clean(done) {
 function copy() {
   return gulp.src(PATHS.assets)
     .pipe(gulp.dest(PATHS.dist + '/assets'));
+}
+
+// Generate a style guide from the Markdown content and HTML template in styleguide/
+function styleGuide(done) {
+  sherpa('src/styleguide/index.md', {
+    output: PATHS.dist + '/styleguide.html',
+    template: 'src/styleguide/template.html'
+  }, done);
 }
 
 // Copy page templates into finished HTML files
@@ -86,7 +94,7 @@ function sass() {
 
 let webpackConfig = {
     externals: { jquery: 'jQuery' },
-    mode: 'development',
+    mode: (PRODUCTION ? 'production' : 'development'),
     module: {
       rules: [
         {
@@ -95,7 +103,8 @@ let webpackConfig = {
             {
                 loader: 'babel-loader',
                 options: {
-                    presets: ['@babel/preset-env']
+                    presets: ['@babel/preset-env'],
+                    compact: false
                 }
             }
           ]
@@ -105,7 +114,8 @@ let webpackConfig = {
           use:['style-loader','css-loader']
         }
       ]
-    }
+    },
+    devtool: !PRODUCTION && 'source-map'
 };
 
 // Combine JavaScript into one file
@@ -139,4 +149,5 @@ function watch() {
   gulp.watch('src/assets/js/**/*.js').on('all', gulp.series(javascript, browser.reload));
   gulp.watch('src/assets/img/**/*').on('all', gulp.series(browser.reload));
   gulp.watch('src/styleguide/**').on('all', gulp.series(browser.reload));
+  gulp.watch('src/styleguide/**').on('all', gulp.series(styleGuide, browser.reload));
 }
