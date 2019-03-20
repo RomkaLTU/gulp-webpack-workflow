@@ -14,7 +14,7 @@ PATHS:
   # Paths to static assets that aren't images, CSS, or JavaScript
   assets:
     - "src/assets/**/*"
-    - "!src/assets/{js,scss,postcss}{,/**/*}"
+    - "!src/assets/{js,scss,css,postcss,tailwind}{,/**/*}"
   # Paths to Sass libraries, which can then be loaded with @import
   sass:
     - "node_modules/bootstrap/scss"
