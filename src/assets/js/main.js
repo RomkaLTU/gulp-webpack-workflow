@@ -1,7 +1,7 @@
 (function($, window, document) {
     $(function() {
 
-        console.log('testing');
+        setTimeout( () => console.log('arrow function!'), 2000 );
 
     });
 }(window.jQuery, window, document));

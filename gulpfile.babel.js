@@ -83,7 +83,7 @@ function resetPages(done) {
 function tailwindcss() {
     return gulp.src('./src/assets/tailwind/tailwind.css')
         .pipe(postcss([
-            tailwind('./src/assets/tailwind/tailwind.js'),
+            tailwind('./src/assets/tailwind/tailwind.config.js'),
             require('autoprefixer'),
             require("postcss-preset-env"),
             require('cssnano')({
@@ -102,9 +102,7 @@ function sass() {
         .pipe($.sass({
             includePaths: PATHS.sass
         }).on('error', $.sass.logError))
-        .pipe($.autoprefixer({
-            browsers: COMPATIBILITY
-        }))
+        .pipe($.autoprefixer())
         .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
         .pipe(gulp.dest(PATHS.dist + '/assets/css'))
         .pipe(browser.reload({ stream: true }));
