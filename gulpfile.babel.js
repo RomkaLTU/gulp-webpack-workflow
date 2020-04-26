@@ -13,7 +13,6 @@ import webpack4      from 'webpack'
 import named         from 'vinyl-named'
 import sherpa        from 'style-sherpa'
 import postcss       from 'gulp-postcss'
-import tailwind      from 'tailwindcss'
 
 // Load all Gulp plugins into one variable
 const $ = plugins();
@@ -31,7 +30,7 @@ function loadConfig() {
 
 // Build the "dist" folder by running all of the below tasks
 gulp.task('build',
-    gulp.series(clean, gulp.parallel(pages, javascript, copy), sass, tailwindcss, styleGuide));
+    gulp.series(clean, gulp.parallel(pages, javascript, copy), css, styleGuide));
 
 // Build the site, run the server, and watch for file changes
 gulp.task('default',
@@ -44,7 +43,7 @@ function clean(done) {
 }
 
 // Copy files out of the assets folder
-// This task skips over the "img", "js", and "scss" folders, which are parsed separately
+// This task skips over the "images", "js", and "scss" folders, which are parsed separately
 function copy() {
     return gulp.src(PATHS.assets)
         .pipe(gulp.dest(PATHS.dist + '/assets'));
@@ -78,32 +77,26 @@ function resetPages(done) {
     done();
 }
 
-// TailwindCSS
-// https://tailwindcss.com/docs/what-is-tailwind/
-function tailwindcss() {
-    return gulp.src('./src/assets/tailwind/tailwind.css')
+/**
+ * @TODO: sourcemaps?
+ * @returns {*}
+ */
+function css() {
+    return gulp.src('./src/assets/css/main.css')
         .pipe(postcss([
-            tailwind('./src/assets/tailwind/tailwind.config.js'),
+            require('postcss-import'),
+            require('tailwindcss')('./tailwind.config.js'),
+            require('postcss-nested'),
+            require('postcss-custom-properties'),
+        ]))
+        .pipe($.if(PRODUCTION, postcss([
             require('autoprefixer'),
-            require("postcss-preset-env"),
+        ])))
+        .pipe($.if(PRODUCTION, postcss([
             require('cssnano')({
                 preset: 'default',
             }),
-        ]))
-        .pipe(gulp.dest(PATHS.dist + '/assets/css'))
-        .pipe(browser.reload({ stream: true }));
-}
-
-// Compile SCSS into CSS
-// In production, the CSS is compressed
-function sass() {
-    return gulp.src('src/assets/scss/**/*.scss')
-        .pipe($.sourcemaps.init())
-        .pipe($.sass({
-            includePaths: PATHS.sass
-        }).on('error', $.sass.logError))
-        .pipe($.autoprefixer())
-        .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
+        ])))
         .pipe(gulp.dest(PATHS.dist + '/assets/css'))
         .pipe(browser.reload({ stream: true }));
 }
@@ -156,15 +149,15 @@ function server(done) {
     done();
 }
 
-// Watch for changes to static assets, pages, Sass, and JavaScript
+// Watch for changes to static assets, pages, and JavaScript
 function watch() {
     gulp.watch(PATHS.assets, copy);
     gulp.watch('src/pages/**/*.html').on('all', gulp.series(pages));
-    gulp.watch('src/{layouts,partials}/**/*.html').on('all', gulp.series(resetPages, pages));
-    gulp.watch('src/assets/tailwind/**/*').on('all', gulp.series(tailwindcss));
-    gulp.watch('src/assets/scss/**/*.scss').on('all', sass);
+    gulp.watch('src/{layouts,partials,helpers,data}/**/*.html').on('all', gulp.series(resetPages, pages));
+    gulp.watch('src/assets/css/**/*').on('all', gulp.series(css));
+    gulp.watch('tailwind.config.js').on('all', gulp.series(css));
     gulp.watch('src/assets/js/**/*.js').on('all', gulp.series(javascript, browser.reload));
-    gulp.watch('src/assets/img/**/*').on('all', gulp.series(browser.reload));
+    gulp.watch('src/assets/images/**/*').on('all', gulp.series(browser.reload));
     gulp.watch('src/styleguide/**').on('all', gulp.series(browser.reload));
     gulp.watch('src/styleguide/**').on('all', gulp.series(styleGuide, browser.reload));
 }
