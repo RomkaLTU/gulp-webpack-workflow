@@ -82,10 +82,10 @@ function resetPages(done) {
  * @returns {*}
  */
 function css() {
-    return gulp.src('./src/assets/css/main.pcss')
+    return gulp.src('./src/assets/css/main.css')
         .pipe(postcss([
             require('postcss-import'),
-            require('tailwindcss')('./tailwind.config.js'),
+            require('tailwindcss'),
             require('postcss-nested'),
             require('postcss-custom-properties'),
         ]))
@@ -158,6 +158,5 @@ function watch() {
     gulp.watch('tailwind.config.js').on('all', gulp.series(css));
     gulp.watch('src/assets/js/**/*.js').on('all', gulp.series(javascript, browser.reload));
     gulp.watch('src/assets/images/**/*').on('all', gulp.series(browser.reload));
-    gulp.watch('src/styleguide/**').on('all', gulp.series(browser.reload));
     gulp.watch('src/styleguide/**').on('all', gulp.series(styleGuide, browser.reload));
 }
