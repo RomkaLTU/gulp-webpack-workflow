@@ -82,7 +82,7 @@ function resetPages(done) {
  * @returns {*}
  */
 function css() {
-    return gulp.src('./src/assets/css/main.css')
+    return gulp.src('./src/assets/css/main.pcss')
         .pipe(postcss([
             require('postcss-import'),
             require('tailwindcss')('./tailwind.config.js'),
