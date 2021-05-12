@@ -55,7 +55,7 @@
   },
   "private": true,
   "dependencies": {
-    "postcss": "^8.2.7",
+    "postcss": "^8.2.10",
     "tailwindcss": "^2.0.3"
   }
 }
